@@ -39,7 +39,6 @@ The meaning of the environment variable is the following:
 - if set and `CLICOLOR == "0"`: [`ColorChoice::Never`];
 - if set and `CLICOLOR != ""` and `CLICOLOR != "0"`: [`ColorChoice::Auto`].
 
-
 ## `NO_COLOR`
 
 Requires the <span class="stab portability" title="Available on crate feature `no_color` only"><code>no_color</code></span> feature.
@@ -48,6 +47,30 @@ The meaning of the environment variable is the following:
 
 - if not set or `NO_COLOR == ""`: ignore;
 - if set and `NO_COLOR != ""`: [`ColorChoice::Never`].
+
+## Compatibility
+
+The goal of this crate is to implement the standards proposed in
+<https://no-color.org> and <https://bixense.com/clicolors/>.
+
+Please note that the proposals in the latter are slightly ambiguous and undesirable
+(see [this issue](https://github.com/jhasse/clicolors/issues/8)),
+hence they are merely taken as an inspiration and not followed too strictly.
+
+Relevant quote from <https://no-color.org>:
+
+> Command-line software which adds ANSI color to its output by default should
+  check for a `NO_COLOR` environment variable that, when present and not an
+  empty string (regardless of its value), prevents the addition of ANSI color.
+
+Relevant quote from <https://bixense.com/clicolors/>:
+
+> The idea is to have the environment variables `CLICOLOR` and `CLICOLOR_FORCE`
+> (which are currently already used for this exact reason on some UNIX systems).
+> When set, the following rules should apply:
+> - `CLICOLOR != 0`: ANSI colors are supported and should be used when the program isn’t piped,
+> - `CLICOLOR == 0`: don’t output ANSI color escape codes,
+> - `CLICOLOR_FORCE != 0`: ANSI colors should be enabled no matter what.
 */
 
 #![deny(missing_docs, missing_debug_implementations, warnings)]
