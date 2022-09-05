@@ -1,20 +1,39 @@
 /*!
 Determine whether output should use colors or not.
+
+The resulting color choice is determined by taking into account,
+in order of priority from higher to lower, the following settings:
+
+- `CLICOLOR_FORCE` environment variable (requires `clicolor_force` feature),
+- explicit user preference (for instance command line arguments),
+- `CLICOLOR` environment variable (requires `clicolor` feature),
+- `NO_COLOR` environment variable (requires `no_color` feature),
+- application default choice.
+
+The specification of `CLICOLOR`, `CLICOLOR_FORCE`, and `NO_COLOR` is inspired by:
+
+- <https://bixense.com/clicolors/>,
+- <https://no-color.org>.
+
 */
 
 #![deny(
     dead_code,
     missing_docs,
     missing_debug_implementations,
-    unused_import_braces,
+    unused_imports,
     unused_qualifications
 )]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 /// Name of the `NO_COLOR` environment variable.
+#[cfg(feature = "no_color")]
 pub const NO_COLOR: &str = "NO_COLOR";
 /// Name of the `CLICOLOR` environment variable.
+#[cfg(feature = "clicolor")]
 pub const CLICOLOR: &str = "CLICOLOR";
 /// Name of the `CLICOLOR_FORCE` environment variable.
+#[cfg(feature = "clicolor_force")]
 pub const CLICOLOR_FORCE: &str = "CLICOLOR_FORCE";
 
 /// Possible color choices for the output.
@@ -32,13 +51,15 @@ pub enum ColorChoice {
 /**
 `NO_COLOR` environment variable setting.
 
-From <https://no-color.org/>:
+From <https://no-color.org>:
 
 > Command-line software which adds ANSI color to its output by default should
   check for a `NO_COLOR` environment variable that, when present and not an
   empty string (regardless of its value), prevents the addition of ANSI
   color.
 */
+#[cfg(feature = "no_color")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "no_color")))]
 pub fn no_color() -> Option<bool> {
     std::env::var_os(NO_COLOR).map(|s| !s.is_empty())
 }
@@ -56,6 +77,7 @@ From <https://bixense.com/clicolors/>:
 > - `CLICOLOR == 0`
 >   - Don’t output ANSI color escape codes.
 */
+#[cfg(feature = "clicolor")]
 pub fn clicolor() -> Option<bool> {
     std::env::var_os(CLICOLOR)
         .and_then(|s| if s.is_empty() { None } else { Some(s) })
@@ -73,6 +95,7 @@ From <https://bixense.com/clicolors/>:
 > - `CLICOLOR_FORCE != 0`
 >   - ANSI colors should be enabled no matter what.
 */
+#[cfg(feature = "clicolor_force")]
 pub fn clicolor_force() -> Option<bool> {
     // std::env::var_os(CLICOLOR_FORCE).map(|s| !s.is_empty() && s != "0")
     std::env::var_os(CLICOLOR_FORCE)
@@ -83,21 +106,28 @@ pub fn clicolor_force() -> Option<bool> {
 /// Resolve the output color choice from default value, environment variables
 /// and explicit CLI choice.
 pub fn resolve(default: ColorChoice, cli: Option<ColorChoice>) -> ColorChoice {
-    match clicolor_force() {
-        None | Some(false) => None,
-        Some(true) => Some(ColorChoice::Always),
+    #[cfg(feature = "clicolor_force")]
+    if let Some(true) = clicolor_force() {
+        return ColorChoice::Always;
     }
-    .or(cli)
-    .or_else(|| match clicolor() {
-        None => None,
-        Some(false) => Some(ColorChoice::Never),
-        Some(true) => Some(ColorChoice::Auto),
-    })
-    .or_else(|| match no_color() {
-        None | Some(false) => None,
-        Some(true) => Some(ColorChoice::Never),
-    })
-    .unwrap_or(default)
+
+    if let Some(c) = cli {
+        return c;
+    }
+
+    #[cfg(feature = "clicolor")]
+    match clicolor() {
+        Some(true) => return ColorChoice::Auto,
+        Some(false) => return ColorChoice::Never,
+        _ => (),
+    }
+
+    #[cfg(feature = "no_color")]
+    if let Some(true) = no_color() {
+        return ColorChoice::Never;
+    }
+
+    default
 }
 
 /// Resolve the output color choice from default value, environment variables
@@ -130,12 +160,11 @@ pub fn resolve_all(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    // NO_COLOR
-
     #[test]
+    #[cfg(feature = "no_color")]
     fn test_no_color() {
+        use super::*;
+
         std::env::remove_var(NO_COLOR);
         assert_eq!(no_color(), None);
 
@@ -148,10 +177,11 @@ mod tests {
         }
     }
 
-    // CLICOLOR
-
     #[test]
+    #[cfg(feature = "clicolor")]
     fn test_clicolor() {
+        use super::*;
+
         std::env::remove_var(CLICOLOR);
         assert_eq!(clicolor(), None);
 
@@ -167,10 +197,11 @@ mod tests {
         }
     }
 
-    // CLICOLOR_FORCE
-
     #[test]
+    #[cfg(feature = "clicolor_force")]
     fn test_clicolor_force() {
+        use super::*;
+
         std::env::remove_var(CLICOLOR_FORCE);
         assert_eq!(clicolor_force(), None);
 
