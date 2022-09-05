@@ -132,6 +132,11 @@ pub fn resolve(default: ColorChoice, cli: Option<ColorChoice>) -> ColorChoice {
 
 /// Resolve the output color choice from default value, environment variables
 /// and explicit CLI choice.
+#[deprecated(
+    since = "0.2.0",
+    note = "this function's signature does not play well with this crate's features; \
+            consider using `should_color::resolve` instead."
+)]
 pub fn resolve_all(
     default: ColorChoice,
     no_color: Option<bool>,
