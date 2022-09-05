@@ -20,7 +20,7 @@ are treated as if they were unset.
 The reason is that it is common to override environment variables by executing programs as
 `VAR= cmd args...` and expect that `VAR` is unset.
 
-## `CLICOLOR_FORCE`
+# `CLICOLOR_FORCE`
 
 Requires the <span class="stab portability" title="Available on crate feature `clicolor_force` only"><code>clicolor_force</code></span> feature.
 
@@ -29,7 +29,7 @@ The meaning of the environment variable is the following:
 - if not set or `CLICOLOR_FORCE == ""` or `CLICOLOR_FORCE == "0"`: ignore;
 - if set and `CLICOLOR_FORCE != ""` and `CLICOLOR_FORCE != "0"`: [`ColorChoice::Always`].
 
-## `CLICOLOR`
+# `CLICOLOR`
 
 Requires the <span class="stab portability" title="Available on crate feature `clicolor` only"><code>clicolor</code></span> feature.
 
@@ -39,7 +39,7 @@ The meaning of the environment variable is the following:
 - if set and `CLICOLOR == "0"`: [`ColorChoice::Never`];
 - if set and `CLICOLOR != ""` and `CLICOLOR != "0"`: [`ColorChoice::Auto`].
 
-## `NO_COLOR`
+# `NO_COLOR`
 
 Requires the <span class="stab portability" title="Available on crate feature `no_color` only"><code>no_color</code></span> feature.
 
@@ -48,7 +48,7 @@ The meaning of the environment variable is the following:
 - if not set or `NO_COLOR == ""`: ignore;
 - if set and `NO_COLOR != ""`: [`ColorChoice::Never`].
 
-## Compatibility
+# Compatibility
 
 The goal of this crate is to implement the standards proposed in
 <https://no-color.org> and <https://bixense.com/clicolors/>.
@@ -156,7 +156,66 @@ pub fn clicolor_force() -> Option<ColorChoice> {
     }
 }
 
-/// Resolve the output color choice from the environment variables and explicit CLI choice.
+/**
+Resolve the output color choice from the environment variables and an explicit CLI preference.
+
+Commonly this function will be called as `resolve(cli).unwrap_or(default)` to take into account
+a preference expressed through the CLI arguments and the default behavior of the application.
+
+# Examples
+
+The following examples assume that all the features
+<span class="stab portability" title="Available on crate feature `clicolor` only"><code>clicolor</code></span>,
+<span class="stab portability" title="Available on crate feature `clicolor_force` only"><code>clicolor_force</code></span>, and
+<span class="stab portability" title="Available on crate feature `no_color` only"><code>no_color</code></span>
+are enabled.
+
+- ```
+  # use should_color::{resolve, ColorChoice};
+  std::env::set_var("CLICOLOR_FORCE", "false"); // this wins
+  # #[cfg(all(feature = "clicolor_force"))]
+  assert_eq!(resolve(Some(ColorChoice::Never)), Some(ColorChoice::Always));
+  ```
+
+- ```
+  # use should_color::{resolve, ColorChoice};
+  std::env::remove_var("CLICOLOR_FORCE");
+  std::env::set_var("CLICOLOR", "1"); // this wins
+  # #[cfg(all(feature = "clicolor"))]
+  assert_eq!(resolve(None), Some(ColorChoice::Auto));
+  # #[cfg(not(feature = "clicolor"))]
+  # assert_eq!(resolve(None), None);
+  ```
+
+- ```
+  # use should_color::{resolve, ColorChoice};
+  std::env::remove_var("CLICOLOR_FORCE");
+  std::env::set_var("CLICOLOR", "0"); // this wins
+  # #[cfg(all(feature = "clicolor"))]
+  assert_eq!(resolve(None), Some(ColorChoice::Never));
+  # #[cfg(not(feature = "clicolor"))]
+  # assert_eq!(resolve(None), None);
+  ```
+
+- ```
+  # use should_color::{resolve, ColorChoice};
+  std::env::remove_var("CLICOLOR_FORCE");
+  std::env::remove_var("CLICOLOR");
+  std::env::set_var("NO_COLOR", "1"); // this wins
+  # #[cfg(feature = "no_color")]
+  assert_eq!(resolve(None), Some(ColorChoice::Never));
+  # #[cfg(not(feature = "no_color"))]
+  # assert_eq!(resolve(None), None);
+  ```
+
+- ```
+  # use should_color::{resolve, ColorChoice};
+  std::env::remove_var("CLICOLOR_FORCE");
+  std::env::remove_var("CLICOLOR");
+  std::env::remove_var("NO_COLOR");
+  assert_eq!(resolve(None), None);
+  ```
+*/
 pub fn resolve(cli: Option<ColorChoice>) -> Option<ColorChoice> {
     #[cfg(feature = "clicolor_force")]
     let choice = clicolor_force();
