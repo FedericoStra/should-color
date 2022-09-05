@@ -8,6 +8,7 @@ repository = "https://github.com/FedericoStra/should-color"
 categories = ["command-line-interface"]
 keywords = ["cli", "color", "clicolor", "no_color", "terminal"]
 edition = "2021"
+exclude = ["/Makefile"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
