@@ -112,14 +112,6 @@ pub fn no_color() -> Option<ColorChoice> {
         Some(s) if !s.is_empty() => Some(ColorChoice::Never),
         _ => None,
     }
-
-    // std::env::var_os(NO_COLOR).and_then(|s| {
-    //     if s.is_empty() {
-    //         None
-    //     } else {
-    //         Some(ColorChoice::Never)
-    //     }
-    // })
 }
 
 /**
@@ -233,8 +225,6 @@ pub fn resolve(cli: Option<ColorChoice>) -> Option<ColorChoice> {
 
     choice
 }
-
-// https://medium.com/@ericdreichert/test-setup-and-teardown-in-rust-without-a-framework-ba32d97aa5ab
 
 #[cfg(test)]
 mod tests {
