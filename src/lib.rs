@@ -17,13 +17,7 @@ The specification of `CLICOLOR`, `CLICOLOR_FORCE`, and `NO_COLOR` is inspired by
 
 */
 
-#![deny(
-    dead_code,
-    missing_docs,
-    missing_debug_implementations,
-    unused_imports,
-    unused_qualifications
-)]
+#![deny(missing_docs, missing_debug_implementations, warnings)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 /// Name of the `NO_COLOR` environment variable.
