@@ -38,7 +38,6 @@ fn test_clicolor_force() {
         Some("false"),
         Some("true"),
     ];
-    let any_default = [ColorChoice::Never, ColorChoice::Auto, ColorChoice::Always];
     let any_cli = [
         None,
         Some(ColorChoice::Never),
@@ -47,15 +46,11 @@ fn test_clicolor_force() {
     ];
     let any_set_clicolor_force = [Some("1"), Some("="), Some("false"), Some("true")];
 
-    for (default, no_color, clicolor, cli, clicolor_force) in iproduct!(
-        any_default,
-        any_env,
-        any_env,
-        any_cli,
-        any_set_clicolor_force
-    ) {
+    for (no_color, clicolor, cli, clicolor_force) in
+        iproduct!(any_env, any_env, any_cli, any_set_clicolor_force)
+    {
         setup_env(no_color, clicolor, clicolor_force);
-        assert_eq!(resolve(default, cli), ColorChoice::Always);
+        assert_eq!(resolve(cli), Some(ColorChoice::Always));
     }
 }
 
@@ -70,19 +65,14 @@ fn test_cli() {
         Some("false"),
         Some("true"),
     ];
-    let any_default = [ColorChoice::Never, ColorChoice::Auto, ColorChoice::Always];
     let any_set_cli = [ColorChoice::Never, ColorChoice::Auto, ColorChoice::Always];
     let any_unset_clicolor_force = [None, Some(""), Some("0")];
 
-    for (default, no_color, clicolor, cli, clicolor_force) in iproduct!(
-        any_default,
-        any_env,
-        any_env,
-        any_set_cli,
-        any_unset_clicolor_force
-    ) {
+    for (no_color, clicolor, cli, clicolor_force) in
+        iproduct!(any_env, any_env, any_set_cli, any_unset_clicolor_force)
+    {
         setup_env(no_color, clicolor, clicolor_force);
-        assert_eq!(resolve(default, Some(cli)), cli);
+        assert_eq!(resolve(Some(cli)), Some(cli));
     }
 }
 
@@ -97,13 +87,12 @@ fn test_cli() {
         Some("false"),
         Some("true"),
     ];
-    let any_default = [ColorChoice::Never, ColorChoice::Auto, ColorChoice::Always];
     let any_set_cli = [ColorChoice::Never, ColorChoice::Auto, ColorChoice::Always];
 
-    for (default, no_color, clicolor, cli, clicolor_force) in
-        iproduct!(any_default, any_env, any_env, any_set_cli, any_env)
+    for (no_color, clicolor, cli, clicolor_force) in
+        iproduct!(any_env, any_env, any_set_cli, any_env)
     {
         setup_env(no_color, clicolor, clicolor_force);
-        assert_eq!(resolve(default, Some(cli)), cli);
+        assert_eq!(resolve(Some(cli)), Some(cli));
     }
 }

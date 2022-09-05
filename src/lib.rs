@@ -78,136 +78,78 @@ pub enum ColorChoice {
 /**
 Get the setting of the `NO_COLOR` environment variable.
 
-The meaning of the environment variable is the following:
+The environment variable is treated as follows:
 
-- if not set or `NO_COLOR == ""`: ignore;
-- if set and `NO_COLOR != ""`: [`ColorChoice::Never`].
-
----
-
-From <https://no-color.org>:
-
-> Command-line software which adds ANSI color to its output by default should
-  check for a `NO_COLOR` environment variable that, when present and not an
-  empty string (regardless of its value), prevents the addition of ANSI
-  color.
+- if not set or `NO_COLOR == ""`: return `None`;
+- if set and `NO_COLOR != ""`: return `Some(`[`ColorChoice::Never`]`)`.
 */
 #[cfg(feature = "no_color")]
-// #[cfg_attr(docsrs, doc(cfg(feature = "no_color")))]
-pub fn no_color() -> Option<bool> {
-    std::env::var_os(NO_COLOR).map(|s| !s.is_empty())
+pub fn no_color() -> Option<ColorChoice> {
+    match std::env::var_os(NO_COLOR) {
+        Some(s) if !s.is_empty() => Some(ColorChoice::Never),
+        _ => None,
+    }
+
+    // std::env::var_os(NO_COLOR).and_then(|s| {
+    //     if s.is_empty() {
+    //         None
+    //     } else {
+    //         Some(ColorChoice::Never)
+    //     }
+    // })
 }
 
 /**
 Get the setting of the `CLICOLOR` environment variable.
 
-The meaning of the environment variable is the following:
+The environment variable is treated as follows:
 
-- if not set or `CLICOLOR == ""`: ignore;
-- if set and `CLICOLOR == "0"`: [`ColorChoice::Never`];
-- if set and `CLICOLOR != ""` and `CLICOLOR != "0"`: [`ColorChoice::Auto`].
-
----
-
-From <https://bixense.com/clicolors/>:
-
-> The idea is to have the environment variables `CLICOLOR` and `CLICOLOR_FORCE`
-> (which are currently already used for this exact reason on some UNIX systems).
-> When set, the following rules should apply:
-> - `CLICOLOR != 0`
->   - ANSI colors are supported and should be used when the program isn’t piped.
-> - `CLICOLOR == 0`
->   - Don’t output ANSI color escape codes.
+- if not set or `CLICOLOR == ""`: return `None`;
+- if set and `CLICOLOR == "0"`: return `Some(`[`ColorChoice::Never`]`)`;
+- if set and `CLICOLOR != ""` and `CLICOLOR != "0"`: return `Some(`[`ColorChoice::Auto`]`)`.
 */
 #[cfg(feature = "clicolor")]
-pub fn clicolor() -> Option<bool> {
-    std::env::var_os(CLICOLOR)
-        .and_then(|s| if s.is_empty() { None } else { Some(s) })
-        .map(|s| s != "0")
+pub fn clicolor() -> Option<ColorChoice> {
+    match std::env::var_os(CLICOLOR) {
+        Some(s) if s == "0" => Some(ColorChoice::Never),
+        Some(s) if !s.is_empty() => Some(ColorChoice::Auto),
+        _ => None,
+    }
 }
 
 /**
 Get the setting of the `CLICOLOR_FORCE` environment variable.
 
-The meaning of the environment variable is the following:
+The environment variable is treated as follows:
 
-- if not set or `CLICOLOR_FORCE == ""` or `CLICOLOR_FORCE == "0"`: ignore;
-- if set and `CLICOLOR_FORCE != ""` and `CLICOLOR_FORCE != "0"`: [`ColorChoice::Always`].
-
----
-
-From <https://bixense.com/clicolors/>:
-
-> The idea is to have the environment variables `CLICOLOR` and `CLICOLOR_FORCE`
-> (which are currently already used for this exact reason on some UNIX systems).
-> When set, the following rules should apply:
-> - `CLICOLOR_FORCE != 0`
->   - ANSI colors should be enabled no matter what.
+- if not set or `CLICOLOR_FORCE == ""` or `CLICOLOR_FORCE == "0"`: return `None`;
+- if set and `CLICOLOR_FORCE != ""` and `CLICOLOR_FORCE != "0"`: return `Some`[`ColorChoice::Always`]`)`.
 */
 #[cfg(feature = "clicolor_force")]
-pub fn clicolor_force() -> Option<bool> {
-    // std::env::var_os(CLICOLOR_FORCE).map(|s| !s.is_empty() && s != "0")
-    std::env::var_os(CLICOLOR_FORCE)
-        .and_then(|s| if s.is_empty() { None } else { Some(s) })
-        .map(|s| s != "0")
+pub fn clicolor_force() -> Option<ColorChoice> {
+    match std::env::var_os(CLICOLOR_FORCE) {
+        Some(s) if !s.is_empty() && s != "0" => Some(ColorChoice::Always),
+        _ => None,
+    }
 }
 
-/// Resolve the output color choice from default value, environment variables
-/// and explicit CLI choice.
-pub fn resolve(default: ColorChoice, cli: Option<ColorChoice>) -> ColorChoice {
+/// Resolve the output color choice from the environment variables and explicit CLI choice.
+pub fn resolve(cli: Option<ColorChoice>) -> Option<ColorChoice> {
     #[cfg(feature = "clicolor_force")]
-    if let Some(true) = clicolor_force() {
-        return ColorChoice::Always;
-    }
+    let choice = clicolor_force();
 
-    if let Some(c) = cli {
-        return c;
-    }
+    #[cfg(feature = "clicolor_force")]
+    let choice = choice.or(cli);
+    #[cfg(not(feature = "clicolor_force"))]
+    let choice = cli;
 
     #[cfg(feature = "clicolor")]
-    match clicolor() {
-        Some(true) => return ColorChoice::Auto,
-        Some(false) => return ColorChoice::Never,
-        _ => (),
-    }
+    let choice = choice.or_else(clicolor);
 
     #[cfg(feature = "no_color")]
-    if let Some(true) = no_color() {
-        return ColorChoice::Never;
-    }
+    let choice = choice.or_else(no_color);
 
-    default
-}
-
-/// Resolve the output color choice from default value, environment variables
-/// and explicit CLI choice.
-#[deprecated(
-    since = "0.2.0",
-    note = "this function's signature does not play well with this crate's features; \
-            consider using `should_color::resolve` instead."
-)]
-pub fn resolve_all(
-    default: ColorChoice,
-    no_color: Option<bool>,
-    clicolor: Option<bool>,
-    clicolor_force: Option<bool>,
-    cli: Option<ColorChoice>,
-) -> ColorChoice {
-    match clicolor_force {
-        None | Some(false) => None,
-        Some(true) => Some(ColorChoice::Always),
-    }
-    .or(cli)
-    .or_else(|| match clicolor {
-        None => None,
-        Some(false) => Some(ColorChoice::Never),
-        Some(true) => Some(ColorChoice::Auto),
-    })
-    .or_else(|| match no_color {
-        None | Some(false) => None,
-        Some(true) => Some(ColorChoice::Never),
-    })
-    .unwrap_or(default)
+    choice
 }
 
 // https://medium.com/@ericdreichert/test-setup-and-teardown-in-rust-without-a-framework-ba32d97aa5ab
@@ -223,11 +165,11 @@ mod tests {
         assert_eq!(no_color(), None);
 
         std::env::set_var(NO_COLOR, "");
-        assert_eq!(no_color(), Some(false));
+        assert_eq!(no_color(), None);
 
         for s in ["0", "1", "false", "true", "="] {
             std::env::set_var(NO_COLOR, s);
-            assert_eq!(no_color(), Some(true));
+            assert_eq!(no_color(), Some(ColorChoice::Never));
         }
     }
 
@@ -243,11 +185,11 @@ mod tests {
         assert_eq!(clicolor(), None);
 
         std::env::set_var(CLICOLOR, "0");
-        assert_eq!(clicolor(), Some(false));
+        assert_eq!(clicolor(), Some(ColorChoice::Never));
 
         for s in ["1", "false", "true", "="] {
             std::env::set_var(CLICOLOR, s);
-            assert_eq!(clicolor(), Some(true));
+            assert_eq!(clicolor(), Some(ColorChoice::Auto));
         }
     }
 
@@ -263,11 +205,11 @@ mod tests {
         assert_eq!(clicolor_force(), None);
 
         std::env::set_var(CLICOLOR_FORCE, "0");
-        assert_eq!(clicolor_force(), Some(false));
+        assert_eq!(clicolor_force(), None);
 
         for s in ["1", "false", "true", "="] {
             std::env::set_var(CLICOLOR_FORCE, s);
-            assert_eq!(clicolor_force(), Some(true));
+            assert_eq!(clicolor_force(), Some(ColorChoice::Always));
         }
     }
 }
