@@ -1,0 +1,17 @@
+[package]
+name = "should-color"
+version = "0.1.0"
+authors = ["Federico Stra <stra.federico@gmail.com>"]
+description = "Determine whether output should use colors or not."
+license = "MIT"
+repository = "https://github.com/FedericoStra/should-color"
+categories = ["command-line-interface"]
+keywords = ["cli", "color", "clicolor", "no_color", "terminal"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dev-dependencies]
+itertools = "0.10.3"
