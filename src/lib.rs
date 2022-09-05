@@ -4,17 +4,50 @@ Determine whether output should use colors or not.
 The resulting color choice is determined by taking into account,
 in order of priority from higher to lower, the following settings:
 
-- `CLICOLOR_FORCE` environment variable (requires `clicolor_force` feature),
+- [`CLICOLOR_FORCE`](#clicolor_force) environment variable (requires `clicolor_force` feature),
 - explicit user preference (for instance command line arguments),
-- `CLICOLOR` environment variable (requires `clicolor` feature),
-- `NO_COLOR` environment variable (requires `no_color` feature),
+- [`CLICOLOR`](#clicolor) environment variable (requires `clicolor` feature),
+- [`NO_COLOR`](#no_color) environment variable (requires `no_color` feature),
 - application default choice.
 
 The specification of `CLICOLOR`, `CLICOLOR_FORCE`, and `NO_COLOR` is inspired by:
 
 - <https://bixense.com/clicolors/>,
-- <https://no-color.org>.
+- <https://no-color.org>,
 
+with the exception that variables which are set to the empty string `""`
+are treated as if they were unset.
+The reason is that it is common to override environment variables by executing programs as
+`VAR= cmd args...` and expect that `VAR` is unset.
+
+## `CLICOLOR_FORCE`
+
+Requires the <span class="stab portability" title="Available on crate feature `clicolor_force` only"><code>clicolor_force</code></span> feature.
+
+The meaning of the environment variable is the following:
+
+- if not set or `CLICOLOR_FORCE == ""` or `CLICOLOR_FORCE == "0"`: ignore;
+- if set and `CLICOLOR_FORCE != ""` and `CLICOLOR_FORCE != "0"`: [`ColorChoice::Always`].
+
+## `CLICOLOR`
+
+Requires the <span class="stab portability" title="Available on crate feature `clicolor` only"><code>clicolor</code></span> feature.
+
+The meaning of the environment variable is the following:
+
+- if not set or `CLICOLOR == ""`: ignore;
+- if set and `CLICOLOR == "0"`: [`ColorChoice::Never`];
+- if set and `CLICOLOR != ""` and `CLICOLOR != "0"`: [`ColorChoice::Auto`].
+
+
+## `NO_COLOR`
+
+Requires the <span class="stab portability" title="Available on crate feature `no_color` only"><code>no_color</code></span> feature.
+
+The meaning of the environment variable is the following:
+
+- if not set or `NO_COLOR == ""`: ignore;
+- if set and `NO_COLOR != ""`: [`ColorChoice::Never`].
 */
 
 #![deny(missing_docs, missing_debug_implementations, warnings)]
@@ -43,7 +76,14 @@ pub enum ColorChoice {
 }
 
 /**
-`NO_COLOR` environment variable setting.
+Get the setting of the `NO_COLOR` environment variable.
+
+The meaning of the environment variable is the following:
+
+- if not set or `NO_COLOR == ""`: ignore;
+- if set and `NO_COLOR != ""`: [`ColorChoice::Never`].
+
+---
 
 From <https://no-color.org>:
 
@@ -59,7 +99,15 @@ pub fn no_color() -> Option<bool> {
 }
 
 /**
-`CLICOLOR` environment variable setting.
+Get the setting of the `CLICOLOR` environment variable.
+
+The meaning of the environment variable is the following:
+
+- if not set or `CLICOLOR == ""`: ignore;
+- if set and `CLICOLOR == "0"`: [`ColorChoice::Never`];
+- if set and `CLICOLOR != ""` and `CLICOLOR != "0"`: [`ColorChoice::Auto`].
+
+---
 
 From <https://bixense.com/clicolors/>:
 
@@ -79,7 +127,14 @@ pub fn clicolor() -> Option<bool> {
 }
 
 /**
-`CLICOLOR_FORCE` environment variable setting.
+Get the setting of the `CLICOLOR_FORCE` environment variable.
+
+The meaning of the environment variable is the following:
+
+- if not set or `CLICOLOR_FORCE == ""` or `CLICOLOR_FORCE == "0"`: ignore;
+- if set and `CLICOLOR_FORCE != ""` and `CLICOLOR_FORCE != "0"`: [`ColorChoice::Always`].
+
+---
 
 From <https://bixense.com/clicolors/>:
 
