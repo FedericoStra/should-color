@@ -86,8 +86,19 @@ pub const CLICOLOR: &str = "CLICOLOR";
 #[cfg(feature = "clicolor_force")]
 pub const CLICOLOR_FORCE: &str = "CLICOLOR_FORCE";
 
-/// Possible color choices for the output.
+/**
+Possible color choices for the output.
+*/
+#[cfg_attr(
+    feature = "clap",
+    doc = r#"
+
+If the <span class="stab portability" title="Available on crate feature `clap` only"><code>clap</code></span> feature
+is enabled then [`ColorChoice`] implements [`clap::ValueEnum`](https://docs.rs/clap/latest/clap/trait.ValueEnum.html).
+"#
+)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum ColorChoice {
     /// The output will not be colorized.
     Never,

@@ -19,6 +19,7 @@ clicolor = []
 clicolor_force = []
 
 [dependencies]
+clap = { version = "3.2.20", features = ["derive", "std"], default-features = false, optional = true }
 
 [dev-dependencies]
 itertools = "0.10.3"
