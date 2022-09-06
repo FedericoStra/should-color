@@ -3,7 +3,7 @@
 all: doc test
 
 doc:
-	cargo +nightly rustdoc -- --cfg docsrs
+	cargo +nightly rustdoc --all-features -- --cfg docsrs
 
 test:
 	@cargo hack --feature-powerset test -- --test-threads=1 -q
