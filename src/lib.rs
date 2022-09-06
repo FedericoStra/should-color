@@ -222,6 +222,9 @@ pub fn clicolor_force() -> Option<ColorChoice> {
 /**
 Resolve the output color choice from the environment variables and an explicit CLI preference.
 
+Please refer to the [crate level documentation](crate) for a detailed description of the
+resolution process.
+
 Commonly this function will be called as `resolve(cli).unwrap_or(default)` to take into account
 a preference expressed through the CLI arguments and the default behavior of the application.
 
