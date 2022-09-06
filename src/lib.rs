@@ -93,8 +93,22 @@ Possible color choices for the output.
     feature = "clap",
     doc = r#"
 
-If the <span class="stab portability" title="Available on crate feature `clap` only"><code>clap</code></span> feature
-is enabled then [`ColorChoice`] implements [`clap::ValueEnum`](https://docs.rs/clap/latest/clap/trait.ValueEnum.html).
+# Clap interoperability
+
+If the <span class="stab portability" title="Available on crate feature `clap` only"><code>clap</code></span> feature is enabled then
+[`ColorChoice`] can be converted to and from [`clap::ColorChoice`](https://docs.rs/clap/latest/clap/enum.ColorChoice.html).
+Moreover it implements [`clap::ValueEnum`](https://docs.rs/clap/latest/clap/trait.ValueEnum.html), hence can be used as
+
+```rust
+#[derive(clap::Parser)]
+struct Cli {
+    /// Coloring of the output
+    #[clap(long, value_name = "WHEN", arg_enum, global = true)]
+    color: Option<should_color::ColorChoice>,
+
+    // Other arguments...
+}
+```
 "#
 )]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -107,6 +121,52 @@ pub enum ColorChoice {
     Auto,
     /// The output will be colorized.
     Always,
+}
+
+// #[cfg(feature = "clap")]
+// /// Alias for [`clap::ColorChoice`](https://docs.rs/clap/latest/clap/enum.ColorChoice.html).
+// pub type ClapColorChoice = clap::ColorChoice;
+
+#[cfg(feature = "clap")]
+impl From<ColorChoice> for clap::ColorChoice {
+    fn from(color_choice: ColorChoice) -> clap::ColorChoice {
+        match color_choice {
+            ColorChoice::Never => clap::ColorChoice::Never,
+            ColorChoice::Auto => clap::ColorChoice::Auto,
+            ColorChoice::Always => clap::ColorChoice::Always,
+        }
+    }
+}
+
+#[cfg(feature = "clap")]
+impl From<clap::ColorChoice> for ColorChoice {
+    fn from(color_choice: clap::ColorChoice) -> ColorChoice {
+        match color_choice {
+            clap::ColorChoice::Never => ColorChoice::Never,
+            clap::ColorChoice::Auto => ColorChoice::Auto,
+            clap::ColorChoice::Always => ColorChoice::Always,
+        }
+    }
+}
+
+/**
+Compute a [`clap::ColorChoice`](https://docs.rs/clap/latest/clap/enum.ColorChoice.html)
+suitable for the [`clap::App::color`](https://docs.rs/clap/latest/clap/builder/struct.App.html#method.color) setting.
+
+This is a convenience function equivalent to [`resolve`] without an explicit CLI preference
+and a default value of [`clap::ColorChoice::Auto`](https://docs.rs/clap/latest/clap/enum.ColorChoice.html#variant.Auto).
+
+```rust
+#[derive(clap::Parser)]
+#[clap(color = should_color::clap_color())]
+struct Cli {
+    // Arguments...
+}
+```
+*/
+#[cfg(feature = "clap")]
+pub fn clap_color() -> clap::ColorChoice {
+    resolve(None).unwrap_or(ColorChoice::Auto).into()
 }
 
 /**
