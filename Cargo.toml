@@ -24,9 +24,15 @@ atty = { version = "0.2.14", optional = true }
 clap = { version = "3.2.20", features = ["color", "derive", "std"], default-features = false, optional = true }
 
 [dev-dependencies]
+clap = { version = "3.2.20", features = ["cargo", "derive"] }
+colored = "2.0.0"
 itertools = "0.10.3"
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "header.html"]
 targets = ["x86_64-unknown-linux-gnu"]
 all-features = true
+
+[[example]]
+name = "debug"
+required-features = ["clap", "stream"]
