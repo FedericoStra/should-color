@@ -3,7 +3,7 @@ This example requires the `clap` and `stream` features.
 
 Run it with:
 ```bash
-cargo run -q -F=clap --example debug
+cargo run -q -F=clap --example colored
 ```
 
 Try running it:
@@ -13,7 +13,7 @@ Try running it:
 
 For example:
 ```bash
-CLICOLOR_FORCE=1 cargo run -q -F=clap --example debug -- --color=never | cat
+CLICOLOR_FORCE=1 cargo run -q -F=clap --example colored -- --color=never | cat
 ```
 */
 
@@ -22,13 +22,7 @@ use colored::{control::set_override, Colorize};
 use should_color::{clap_color, resolve, ColorChoice};
 
 #[derive(Debug, Parser)]
-#[clap(
-    name = "app-exe",
-    author,
-    version,
-    about,
-    color = clap_color()
-)]
+#[clap(version, color = clap_color())]
 struct Cli {
     /// Coloring
     #[clap(long, value_name = "WHEN", arg_enum, global = true)]
