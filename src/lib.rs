@@ -123,6 +123,26 @@ pub enum ColorChoice {
     Always,
 }
 
+#[cfg(feature = "stream")]
+impl ColorChoice {
+    /**
+    Determine the color setting for a specific stream.
+
+    If the choice is [`ColorChoice::Never`] or [`ColorChoice::Always`],
+    the result will be `false` and `true` respectively.
+
+    If the choice is [`ColorChoice::Auto`], then the answer depends on whether
+    the `stream` is a tty or not.
+    */
+    pub fn for_stream(&self, stream: atty::Stream) -> bool {
+        match self {
+            ColorChoice::Never => false,
+            ColorChoice::Always => true,
+            ColorChoice::Auto => atty::is(stream),
+        }
+    }
+}
+
 // #[cfg(feature = "clap")]
 // /// Alias for [`clap::ColorChoice`](https://docs.rs/clap/latest/clap/enum.ColorChoice.html).
 // pub type ClapColorChoice = clap::ColorChoice;

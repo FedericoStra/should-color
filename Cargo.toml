@@ -13,12 +13,14 @@ exclude = ["/Makefile"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["no_color", "clicolor", "clicolor_force"]
+default = ["no_color", "clicolor", "clicolor_force", "stream"]
 no_color = []
 clicolor = []
 clicolor_force = []
+stream = ["atty"]
 
 [dependencies]
+atty = { version = "0.2.14", optional = true }
 clap = { version = "3.2.20", features = ["color", "derive", "std"], default-features = false, optional = true }
 
 [dev-dependencies]
