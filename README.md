@@ -11,16 +11,19 @@ Determine whether output should use colors or not.
 
 The [`should-color`](https://crates.io/crates/should-color) crate helps determine the color choice for an application output based on the command line arguments and environment variables.
 
-The resulting color choice is determined by taking into account,
-in order of priority from higher to lower, the following settings:
+The resulting color choice is determined by taking into account, in order of priority from higher to lower, the following settings:
 
-- [`CLICOLOR_FORCE`](#clicolor_force) environment variable (requires `clicolor_force` feature),
+- [`CLICOLOR_FORCE`] environment variable (requires `clicolor_force` feature),
 - explicit user preference (for instance command line arguments),
-- [`CLICOLOR`](#clicolor) environment variable (requires `clicolor` feature),
-- [`NO_COLOR`](#no_color) environment variable (requires `no_color` feature),
+- [`CLICOLOR`] environment variable (requires `clicolor` feature),
+- [`NO_COLOR`] environment variable (requires `no_color` feature),
 - application default choice.
 
 Please refer to the [documentation](https://docs.rs/should-color/latest/should_color/index.html) for more details on the resolution process.
+
+[`CLICOLOR_FORCE`]: https://docs.rs/should-color/latest/should_color/index.html#clicolor_force
+[`CLICOLOR`]: https://docs.rs/should-color/latest/should_color/index.html#clicolor
+[`NO_COLOR`]: https://docs.rs/should-color/latest/should_color/index.html#no_color
 
 ## Alternatives and comparison
 
