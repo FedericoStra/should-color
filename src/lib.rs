@@ -4,11 +4,14 @@ Determine whether output should use colors or not.
 The resulting color choice is determined by taking into account,
 in order of priority from higher to lower, the following settings:
 
-- [`CLICOLOR_FORCE`](#clicolor_force) environment variable (requires `clicolor_force` feature),
+- [`CLICOLOR_FORCE`](#clicolor_force) environment variable (requires the <span class="stab portability"><code>clicolor_force</code></span> feature),
 - explicit user preference (for instance command line arguments),
-- [`CLICOLOR`](#clicolor) environment variable (requires `clicolor` feature),
-- [`NO_COLOR`](#no_color) environment variable (requires `no_color` feature),
+- [`CLICOLOR`](#clicolor) environment variable (requires the <span class="stab portability"><code>clicolor</code></span> feature),
+- [`NO_COLOR`](#no_color) environment variable (requires the <span class="stab portability"><code>no_color</code></span> feature),
 - application default choice.
+
+If the final choice is `ColorChoice::Auto` and the feature <span class="stab portability"><code>stream</code></span> is enabled,
+the choice can be refined using [`ColorChoice::for_stream`] which takes into account the output stream.
 
 The specification of `CLICOLOR`, `CLICOLOR_FORCE`, and `NO_COLOR` is inspired by:
 
@@ -50,7 +53,7 @@ The meaning of the environment variable is the following:
 
 # Compatibility
 
-The goal of this crate is to implement the standards proposed in
+The goal of this crate is to merge and specify the standards proposed in
 <https://no-color.org> and <https://bixense.com/clicolors/>.
 
 Please note that the proposals in the latter are slightly ambiguous and undesirable
@@ -71,7 +74,11 @@ Relevant quote from <https://bixense.com/clicolors/>:
 > - `CLICOLOR != 0`: ANSI colors are supported and should be used when the program isn’t piped,
 > - `CLICOLOR == 0`: don’t output ANSI color escape codes,
 > - `CLICOLOR_FORCE != 0`: ANSI colors should be enabled no matter what.
+
+# Crate features
 */
+#![doc = document_features::document_features!(feature_label = r#"<span class="stab portability"><code>{feature}</code></span>"#)]
+//!
 
 #![deny(missing_docs, missing_debug_implementations, warnings)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
@@ -132,7 +139,12 @@ impl ColorChoice {
     the result will be `false` and `true` respectively.
 
     If the choice is [`ColorChoice::Auto`], then the answer depends on whether
-    the `stream` is a tty or not.
+    the `stream` is a TTY or not.
+
+    See the examples [`colored.rs`] and [`termcolor.rs`] for a demonstration of how to use this method.
+
+    [`colored.rs`]: https://github.com/FedericoStra/should-color/blob/master/examples/colored.rs#L38-L39
+    [`termcolor.rs`]: https://github.com/FedericoStra/should-color/blob/master/examples/termcolor.rs#L38-L39
     */
     pub fn for_stream(&self, stream: atty::Stream) -> bool {
         match self {
@@ -242,11 +254,19 @@ pub fn clicolor_force() -> Option<ColorChoice> {
 /**
 Resolve the output color choice from the environment variables and an explicit CLI preference.
 
+Notice that the resolution depends on the activation of the features
+<span class="stab portability"><code>clicolor_force</code></span>,
+<span class="stab portability"><code>clicolor</code></span>, and
+<span class="stab portability"><code>no_color</code></span>.
 Please refer to the [crate level documentation](crate) for a detailed description of the
 resolution process.
 
 Commonly this function will be called as `resolve(cli).unwrap_or(default)` to take into account
 a preference expressed through the CLI arguments and the default behavior of the application.
+See the examples [`colored.rs`] and [`termcolor.rs`] for a demonstration of how to use this function.
+
+[`colored.rs`]: https://github.com/FedericoStra/should-color/blob/master/examples/colored.rs#L36
+[`termcolor.rs`]: https://github.com/FedericoStra/should-color/blob/master/examples/termcolor.rs#L36
 
 # Examples
 
