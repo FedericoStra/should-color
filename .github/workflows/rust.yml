@@ -18,6 +18,6 @@ jobs:
     - name: Build
       run: cargo build --verbose --all-features --all-targets
     - name: Test
-      run: cargo test --verbose --all-features --all-targets -- --test-threads 1
+      run: cargo test --verbose --all-features -- --test-threads 1
     - name: Fmt
       run: cargo fmt --check
