@@ -29,7 +29,7 @@ clap = ["dep:clap"]
 [dependencies]
 atty = { version = "0.2.14", optional = true }
 clap = { version = "3.2.20", features = ["color", "derive", "std"], default-features = false, optional = true }
-document-features = { version = "0.2.5", git = "https://github.com/slint-ui/document-features", rev = "edcf2a9f74cf28f461b506be9dafe28359967cdc" }
+document-features = "0.2.6"
 
 [dev-dependencies]
 clap = { version = "3.2.20", features = ["cargo", "derive"] }
